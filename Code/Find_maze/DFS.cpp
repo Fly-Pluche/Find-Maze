@@ -1,117 +1,179 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define Maxsize 30
-
-void Initarry(int map[100][100], int n)
+//��ջ���Ͷ��� 
+typedef int DataType;
+struct Node
 {
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-        {
-            scanf("%d", &map[i][j]);
-        }
-    }
-}
-
-void Initarry2(int map[2][2], int n)
-{
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-        {
-            scanf("%d", &map[i][j]);
-        }
-    }
-}
-
-struct sstack
-{
-    int top;
-    int index[Maxsize][2];
+	DataType data;
+	struct Node* next;
 };
-typedef struct sstack *Stack;
 
-Stack InitStack()
+struct Maze
 {
-    Stack stack = (Stack)malloc(sizeof(struct sstack));
-    if (!stack)
-    {
-        printf("Alloc Faile");
-    }
-    stack->top = 0;
-    return stack;
-}
+	DataType data[100][100];
+	int size;
+}; 
 
-void PullStack(Stack Pstack, int x, int y)
-{
-    Pstack->index[++Pstack->top][0] = x;
-    Pstack->index[Pstack->top][1] = y;
-    if (Pstack->top == Maxsize)
-    {
-        printf("Over Full!");
-    }
-}
-void PushStack(Stack Pstack)
-{
-    Pstack->top--;
-}
+typedef struct Node *PNode;
+typedef struct Node *top, *LinkStack;
 
-void PassMaze(Stack Pstack, int map[100][100], int step[8][2], int Begin_EN[2][2])
+//������ջ
+LinkStack SetNullStack_Link()
 {
-    int m;
-    int x = Begin_EN[0][0];
-    int y = Begin_EN[0][1];
-    PullStack(Pstack, x, y);
-    while (x != Begin_EN[1][0] || y != Begin_EN[1][1])
-    {
-        for (m = 0; m < 8; m++)
-        {
-            if (map[x + step[m][0]][y + step[m][1]] == 0)
-            {
-                x += step[m][0];
-                y += step[m][1];
-                PullStack(Pstack, x, y);
-                map[x][y] = 2;
-                break;
-            }
-        }
-        if (m == 8)
-        {
-            map[x][y] = 1;
-            PushStack(Pstack);
-            x = Pstack->index[Pstack->top][0];
-            y = Pstack->index[Pstack->top][1];
-        }
-    }
-    printf("%d %d;", x, y);
-}
-void PrintStack(Stack stack)
+	LinkStack top =(LinkStack)malloc(sizeof(struct Node));
+	if (top != NULL)
+		top->next = NULL;
+	else 
+		 printf("Alloc failure");
+	return top;
+ } 
+
+//�ж�ջ��
+
+int IsNullStack_link(LinkStack top)
 {
-    stack->top--;
-    while (stack->top)
-    {
-        printf("%d %d;", stack->index[stack->top][0], stack->index[stack->top][1]);
-        stack->top--;
-    }
-}
+	if(top->next == NULL)
+		return 1;
+	else 
+		return 0;
+ } 
+ 
+ //��ջ
+ 
+void Push_link(LinkStack top,DataType x)
+{
+	PNode p;
+	p = (PNode)malloc(sizeof(struct Node));
+	if(top == NULL)
+		printf("Alloc failure");
+	else
+	{
+		p->data = x;
+		p->next = top->next;
+		top->next = p;
+	}	
+ } 
+ 
+ //��ջ
+ 
+void Pop_link(LinkStack top)
+ {
+ 	PNode p;
+ 	if(IsNullStack_link(top))
+ 	{
+ 		printf("it is empty stack!");
+	 }
+	 else{
+	 p = top->next;
+	 top->next = p->next;
+	 free(p);	
+	 }
+	 
+  } 
+
+
+//ȡ����Ԫ��
+
+DataType Top_link(LinkStack top)
+{
+	if(IsNullStack_link(top))
+		printf("it is empty stack!");
+	else 
+		return top->next->data;
+ } 
+
+
+// 
+int MazeDFS(int entryX,int entryY,int exitX,int exitY,Maze maze)
+{
+	
+	int direction[4][2]={{0,1},{1,0},{0,-1},{-1,0}};
+	LinkStack linkStackX = NULL;
+	LinkStack linkStackY = NULL;
+	int posX,posY;
+	int preposX,preposY;
+	int **mark;
+	int i,j;
+	int mov;
+	
+	mark = (int**)malloc(sizeof(int*) * maze.size);
+	for(i=0;i<maze.size;i++)
+		mark[i]=(int*)malloc(sizeof(int)*maze.size);
+	for(i=0;i<maze.size;i++)
+	{
+		for(j=0;j<maze.size;j++)
+			mark[i][j]=0;
+	}
+	linkStackX = SetNullStack_Link();
+	linkStackY = SetNullStack_Link();
+	mark[entryX][entryY] = 1;
+	Push_link(linkStackX,entryX);
+	Push_link(linkStackY,entryY);
+	while(!IsNullStack_link(linkStackX))
+	{
+		preposX = Top_link(linkStackX);
+		preposY = Top_link(linkStackY);
+		Pop_link(linkStackX);
+		Pop_link(linkStackY);
+		mov = 0;
+		while(mov<4)
+		{
+			posX = preposX + direction[mov][0];
+			posY = preposY + direction[mov][1];
+			if(posX == exitX && posY == exitY)
+			{
+				Push_link(linkStackX,preposX);
+				Push_link(linkStackY,preposY);
+				//printf("��������Թ�·�����£�\n");
+				printf("%d %d;",exitX,exitY);
+				while(!IsNullStack_link(linkStackX))
+				{
+					posX = Top_link(linkStackX);
+					posY = Top_link(linkStackY);
+					Pop_link(linkStackX);
+					Pop_link(linkStackY);
+					printf("%d %d;",posX,posY);
+				}  
+				return 1;
+			}
+		if(maze.data[posX][posY] == 0 && mark[posX][posY]==0)
+		{
+			mark[posX][posY] = 1;
+			Push_link(linkStackX,preposX);
+			Push_link(linkStackY,preposY);
+			preposX = posX;
+			preposY = posY;
+			mov = 0;
+		
+		}
+		else
+			mov++;
+		}
+		
+	}
+	return 0;
+	
+} 
+
 
 int main()
 {
-    int n;
-    // int step[8][2] = {{1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1},{ 0, -1}, {1, -1}};
-    int step[8][2] = {{0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}, {-1, 1}};
-    scanf("%d", &n);
-    int map[100][100];
-    Initarry(map, n);
-    int Begin_End[2][2];
-    Initarry2(Begin_End, 2);
+	int size,exitX,exitY,entryY,entryX;
+	Maze maze;
+	scanf("%d",&maze.size);
+	for(int i=0;i<maze.size;i++){
+		for(int j=0;j<maze.size;j++){
+			scanf("%d",&maze.data[i][j]);
+		}
+	}
+	scanf("%d%d%d%d",&entryX,&entryY,&exitX,&exitY);
 
-    Stack Pstack = InitStack();
-
-    PassMaze(Pstack, map, step, Begin_End);
-
-    PrintStack(Pstack);
-
-    return 0;
+	MazeDFS(entryX,entryY,exitX,exitY,maze);
+	
 }
+
+
+
+
+ 

@@ -9,4 +9,4 @@ Welcome Everyone :grin:
 - 深度生成，Prime生成，递归分割生成三种生成迷宫算法
 - pygame可视化
 
-![image-20211208195022735](https://gitee.com/Black_Friday/blog/raw/master/image/202112081950979.png)
+![image](https://user-images.githubusercontent.com/73021377/155077181-710326f1-5395-40e5-bd54-8cef1f3c02e7.png)
